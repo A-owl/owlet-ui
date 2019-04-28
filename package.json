@@ -21,17 +21,29 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "prepublishOnly": "rm -rf es lib && yarn run build",
-    "create-package": "./tools/create-package.js",
-    "create-package:components": "./tools/create-package-components.js",
     "build-lib": "BABEL_ENV=lib babel src --out-dir lib --ignore '**/stories','**/test' --source-maps inline",
     "build-es": "BABEL_ENV=es babel src --out-dir es --ignore '**/stories','**/test' --source-maps inline",
     "build": "concurrently --names 'lib,es' 'yarn run build-lib' 'yarn run build-es'",
     "clean": "git clean -Xdf",
-    "release": "np",
-    "docs": "cd docs && yarn run dev",
+    "lint": "yarn lint-es && yarn lint-ts && yarn lint-sass",
+    "lint-fix": "yarn lint-es-fix && yarn lint-ts-fix",
+    "lint-es": "eslint --cache --ignore-pattern \"**/*.snap.js\" \"src/**/*.js\"",
+    "lint-es-fix": "eslint --fix --cache --ignore-pattern \"**/*.snap.js\" \"src/**/*.js\"",
+    "lint-sass": "sass-lint -v --max-warnings 0",
+    "lint-sass-fix": "sass-lint-auto-fix -c ./.sass-lint-fix.yml",
+    "lint-ts": "tsc -p ./tsconfig.json --noEmit && tslint -c ./tslint.yaml -p ./tsconfig.json",
+    "lint-ts-fix": "tslint -c ./tslint.yaml -p ./tsconfig.json --fix",
+    "test": "yarn lint && yarn test-unit",
+    "test-unit": "cross-env NODE_ENV=test jest --config ./scripts/jest/config.json",
+    "test-cover": "npm run test-unit -- --coverage ",
+    "test-watch": "cross-env NODE_ENV=test jest --watchAll",
+    "precommit-msg": "echo 'Pre-commit checks using eslint tslint sasslint and code test...' && exit 0",
+    "start": "cd docs && yarn run dev",
     "deploy-docs": "cd docs && yarn install && yarn run deploy",
-    "postpublish": "yarn run deploy-docs"
+    "postpublish": "yarn run deploy-docs",
+    "release": "node ./scripts/release.js",
+    "postinstall": "node ./scripts/postinstall.js",
+    "version": "node ./scripts/update-changelog-version.js"
   },
   "engines": {
     "node": ">=8"
@@ -51,6 +63,8 @@
     "react-scrollbar-size": "^2.0.2",
     "react-tiny-virtual-list": "^2.1.4",
     "react-transition-group": "^2.5.0",
+    "sass-lint": "^1.13.1",
+    "sass-lint-auto-fix": "^0.17.0",
     "tinycolor2": "^1.4.1",
     "ui-box": "^1.4.0"
   },
@@ -65,11 +79,19 @@
     "@babel/plugin-transform-runtime": "^7.1.0",
     "@babel/preset-env": "^7.1.0",
     "@babel/preset-react": "^7.0.0",
+    "@babel/preset-typescript": "^7.1.0",
     "@babel/register": "^7.0.0",
     "@reactions/component": "^2.0.2",
+    "@types/classnames": "^2.2.6",
+    "@types/enzyme": "^3.1.13",
+    "@types/jest": "^24.0.6",
+    "@types/react": "^16.8.4",
+    "@types/react-dom": "^16.8.2",
     "ava": "^1.3.1",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "^10.0.1",
+    "babel-jest": "^24.1.0",
+    "babel-loader": "^8.0.4",
     "babel-plugin-add-react-displayname": "^0.0.5",
     "circular-dependency-plugin": "^5.0.2",
     "concurrently": "^4.0.1",
@@ -93,6 +115,7 @@
     "fs-extra": "^7.0.0",
     "lint-staged": "^7.3.0",
     "np": "^4.0.2",
+    "pre-commit": "^1.2.2",
     "prettier": "^1.14.3",
     "react": "^16.5.2",
     "react-chromatic": "^0.8.4",
@@ -106,7 +129,15 @@
   },
   "lint-staged": {
     "*.js": [
-      "prettier --write",
+      "npm run lint-es-fix",
+      "git add"
+    ],
+    "*.ts": [
+      "npm run lint-ts-fix",
+      "git add"
+    ],
+    "*.scss": [
+      "npm run lint-sass-fix",
       "git add"
     ],
     "*.{json,md}": [
@@ -114,24 +145,15 @@
       "git add"
     ]
   },
-  "ava": {
-    "files": [
-      "**/test/**/*.js"
-    ],
-    "require": [
-      "@babel/register",
-      "./tools/test-setup"
-    ]
-  },
+  "pre-commit": [
+    "precommit-msg",
+    "lint-staged",
+    "test-cover"
+  ],
   "size-limit": [
     {
       "path": "commonjs/index.js",
       "limit": "204 KB"
     }
-  ],
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  }
+  ]
 }
