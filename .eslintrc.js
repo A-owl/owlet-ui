@@ -75,15 +75,13 @@ module.exports = {
     'react/require-extension': 0,
     'react/self-closing-comp': 0,
     'react/sort-comp': 0,
-    'redux-saga/no-yield-in-race': 2,
-    'redux-saga/yield-effects': 2,
     'require-yield': 0,
   },
-  settings: {
-    'import/resolver': {
-      webpack: {
-        config: './src/config/webpack.prod.js',
-      },
-    },
-  },
+  // settings: {
+  //   'import/resolver': {
+  //     webpack: {
+  //       config: './src/webpack.config.js',
+  //     },
+  //   },
+  // },
 };

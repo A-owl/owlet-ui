@@ -1,7 +1,7 @@
 /* eslint-disable react/no-danger */
 const React = require('react')
 const { min: createSnippet } = require('@segment/snippet')
-const { extractStyles } = require('../src')
+const { extractStyles } = require('../es')
 const segmentWriteKey = require('./segmentWriteKey')
 
 const getSnippet = ({ writeKey }) => {
